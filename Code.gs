@@ -1,10 +1,13 @@
 function myFunction() {
-  getFolders();
+  var sheets = getSheets();
+  pushWeekToCalendar(sheets.ThisWeek);
+  pushWeekToCalendar(sheets.NextWeek);
 }
 
-function pushWeekToCalendar(spreadsheet) {
+function pushWeekToCalendar(ss) {
   
   //get sheet for each day of week
+  var spreadsheet = SpreadsheetApp.open(ss);
   var DaysOfWeek = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
   var email = Session.getActiveUser().getEmail();
   
@@ -84,7 +87,7 @@ function pushWeekToCalendar(spreadsheet) {
           //Logger.log('CNBC? ' + SpecialCase);
           
           //combine variables into event title here   
-          //if (Job.search('CNBC') !== -1) {                                               // WHY WONT THIS WORK? it works fine it tuns out, it was just getting checked over and not replaced for new event
+          //if (Job.search('CNBC') !== -1) {                // WHY WONT THIS WORK? it works fine it tuns out, it was just getting checked over and not replaced for new event
           //  var newEventTitle = "On-Air: (" + Job + ")";
           //  Logger.log('CNBC Title changed...');
           //}
@@ -258,7 +261,7 @@ function pushWeekToCalendar(spreadsheet) {
 
 
 
-function getFolders() {
+function getSheets() {
   // Find parent 2017 Schedule Folder
   var AllFolders = DriveApp.searchFolders('title contains "2017 Production Control Schedules"');
   while (AllFolders.hasNext()) {
@@ -275,12 +278,11 @@ function getFolders() {
   
   //Find child month folder
   var Today = new Date();
-  var M = Today.getMonth();
-
+  
   //Get current month in string form
   var MonthOfYear = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
-  var Month = MonthOfYear[M]; //Get string form of month
-  var NextMonth = MonthOfYear[(M+1)];
+  var Month = MonthOfYear[Today.getMonth()]; //Get string form of month
+  var NextMonth = MonthOfYear[Today.getMonth()+1];
   Logger.log(Month+NextMonth);
   
   var MonthFolder = Dfolder.searchFolders('title contains "'+ Month +'"');
@@ -295,8 +297,7 @@ function getFolders() {
  
   while (folderSheets.hasNext()) {
     var Sheets = folderSheets.next();
-    var SheetNames = Sheets.getName();
-    var WeekOf = SheetNames.toUpperCase();
+    var WeekOf = Sheets.getName().toUpperCase();
     var W = WeekOf.search(Month);
     var WeekOfNum = WeekOf.slice(W+Month.length);
     
@@ -325,8 +326,7 @@ function getFolders() {
     
     while (folderSheets.hasNext()) {
       var Sheets = folderSheets.next();
-      var SheetNames = Sheets.getName();
-      var WeekOf = SheetNames.toUpperCase();
+      var WeekOf = Sheets.getName().toUpperCase();
       var W = WeekOf.search(NextMonth);
       var WeekOfNum = WeekOf.slice(W+NextMonth.length);
       
@@ -337,8 +337,7 @@ function getFolders() {
     }      
   }  
   
-  pushWeekToCalendar(SpreadsheetApp.open(ThisWeekSheet));
-  pushWeekToCalendar(SpreadsheetApp.open(NextWeekSheet));
+  return {ThisWeek: ThisWeekSheet, NextWeek: NextWeekSheet};
 }  
 
 
